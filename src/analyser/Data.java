@@ -1,7 +1,10 @@
 package analyser;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.io.*;
 import java.sql.*;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,6 +30,8 @@ public class Data {
         this.source = source;
         connection = DriverManager.getConnection("jdbc:sqlite:"+ source + ".db");
 
+        flightSet = new HashSet<Flight>();
+        recordPairSet = new HashSet<RecordPair>();
     }
 
     /**
@@ -79,7 +84,7 @@ public class Data {
      * @throws Exception
      */
     public void addData() throws Exception {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(source + ".csv"))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("resources/" + source + ".csv"))) {
             String line;
             int j = 0;
             while ((line = bufferedReader.readLine()) != null) {
@@ -119,28 +124,64 @@ public class Data {
      * Finds records with similar characteristics and assumes they are the same flight
      * @throws SQLException
      */
-    public void findFlights() throws SQLException {
+    public void findRecordPairs() throws SQLException {
         Statement statement = connection.createStatement();
 
         ResultSet firstLoop = statement.executeQuery("SELECT * FROM records");
         ResultSet secondLoop = statement.executeQuery("SELECT * FROM records");
 
-
-
         //Compare every flight record with every other flight record
-        //If two flights use the same airframe, reasonably assume that they might be the same flight
         while (firstLoop.next()) {
             while (secondLoop.next()) {
+                RecordPair recordPair = new RecordPair(firstLoop.getString("TIMESTAMP"), secondLoop.getString("TIMESTAMP"));
+                recordPairSet.add(recordPair);
+
+                //Check if airframe registrations are the same
+                if (Objects.equals(firstLoop.getString("airframe_registration"), secondLoop.getString("airframe_registration")) ||
+                        Objects.equals(firstLoop.getString("airframe_registration"), "") ||
+                        Objects.equals("", secondLoop.getString("airframe_registration"))) {
+                    recordPair.addValue(1);
+                }
+
+                //Check if airframes are the same
                 if (Objects.equals(firstLoop.getString("content_airframe_type_icao_value"), secondLoop.getString("content_airframe_type_icao_value")) ||
-                    Objects.equals(firstLoop.getString("content_airframe_type_icao_value"), "") ||
-                    Objects.equals("", secondLoop.getString("content_airframe_type_icao_value"))){
-                        RecordPair recordPair = new RecordPair(firstLoop.getString("TIMESTAMP"),secondLoop.getString("TIMESTAMP"));
-                        recordPair.addValue(1);
+                        Objects.equals(firstLoop.getString("content_airframe_type_icao_value"), "") ||
+                        Objects.equals("", secondLoop.getString("content_airframe_type_icao_value"))) {
+                    recordPair.addValue(1);
+                }
+
+                //Check if departures destination is same
+                if (Objects.equals(firstLoop.getString("departure_aerodrome_actual_icao_value"), secondLoop.getString("departure_aerodrome_actual_icao_value")) ||
+                        Objects.equals(firstLoop.getString("departure_aerodrome_scheduled_icao_value"), secondLoop.getString("departure_aerodrome_actual_icao_value")) ||
+                        Objects.equals(firstLoop.getString("departure_aerodrome_actual_icao_value"), secondLoop.getString("departure_aerodrome_scheduled_icao_value")) ||
+                        Objects.equals(firstLoop.getString("departure_aerodrome_scheduled_icao_value"), secondLoop.getString("departure_aerodrome_scheduled_icao_value")) ||
+                        Objects.equals(firstLoop.getString("departure_aerodrome_actual_icao_value"), "") ||
+                        Objects.equals(firstLoop.getString("departure_aerodrome_scheduled_icao_value"), "") ||
+                        Objects.equals("", secondLoop.getString("departure_aerodrome_actual_icao_value")) ||
+                        Objects.equals("", secondLoop.getString("departure_aerodrome_scheduled_icao_value"))) {
+                    recordPair.addValue(1);
+                }
+
+                //Check if departures destination is same
+                if (Objects.equals(firstLoop.getString("arrival_aerodrome_actual_icao_value"), secondLoop.getString("arrival_aerodrome_actual_icao_value")) ||
+                        Objects.equals(firstLoop.getString("arrival_aerodrome_scheduled_icao_value"), secondLoop.getString("arrival_aerodrome_scheduled_icao_value")) ||
+                        Objects.equals(firstLoop.getString("arrival_aerodrome_actual_icao_value"), secondLoop.getString("arrival_aerodrome_scheduled_icao_value")) ||
+                        Objects.equals(firstLoop.getString("arrival_aerodrome_scheduled_icao_value"), secondLoop.getString("arrival_aerodrome_scheduled_icao_value")) ||
+                        Objects.equals(firstLoop.getString("arrival_aerodrome_actual_icao_value"), "") ||
+                        Objects.equals(firstLoop.getString("arrival_aerodrome_scheduled_icao_value"), "") ||
+                        Objects.equals("", secondLoop.getString("arrival_aerodrome_actual_icao_value")) ||
+                    Objects.equals("", secondLoop.getString("arrival_aerodrome_scheduled_icao_value"))) {
+                    recordPair.addValue(1);
                 }
             }
         }
+    }
 
-        System.out.println();
+    //TODO
+    public void findFlights() {
+        for (RecordPair recordPair : recordPairSet) {
+
+        }
     }
 
     public int getFlightSetSize() {
@@ -149,5 +190,13 @@ public class Data {
 
     public int getRecordPairSize() {
         return recordPairSet.size();
+    }
+
+    public int getRecordPairSizeOverValue(int n) {
+        Set<RecordPair> likelyPairs = new HashSet<RecordPair>();
+        for (RecordPair recordPair : recordPairSet) {
+            if (recordPair.getValue() > n) likelyPairs.add(recordPair);
+        }
+        return likelyPairs.size();
     }
 }

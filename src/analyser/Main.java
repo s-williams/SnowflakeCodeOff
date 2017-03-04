@@ -1,7 +1,5 @@
 package analyser;
 
-import java.io.File;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -16,8 +14,7 @@ public class Main {
         try {
             Scanner scanner = new Scanner(System.in);
 
-            System.out.println("What database to create/edit?");
-            Data data = new Data(scanner.next());
+            Data data = new Data("beeEdit");
 
             System.out.println("Recreate database? Y/n");
             if (Objects.equals(scanner.next().toLowerCase(), "y")) {
@@ -29,9 +26,10 @@ public class Main {
             }
 
             System.out.println("Finding flights");
-            data.findFlights();
+            data.findRecordPairs();
 
-            System.out.println("\nSize of flight set is: " + data.getFlightSetSize());
+            System.out.println("Size of recordPair set is: " + data.getRecordPairSize());
+            System.out.println("Size of likely flight set is: " + data.getRecordPairSizeOverValue(3));
 
         } catch (Exception e) {
             e.printStackTrace();
