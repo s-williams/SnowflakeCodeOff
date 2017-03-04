@@ -46,4 +46,8 @@ public class RecordPair {
     public int getValue() {
         return value;
     }
+
+    public String getRecordTimeStamp1() {
+        return recordTimeStamp1;
+    }
 }

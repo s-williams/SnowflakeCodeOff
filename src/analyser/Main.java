@@ -14,7 +14,7 @@ public class Main {
         try {
             Scanner scanner = new Scanner(System.in);
 
-            Data data = new Data("beeEdit");
+            Data data = new Data("beeTester");
 
             System.out.println("Recreate database? Y/n");
             if (Objects.equals(scanner.next().toLowerCase(), "y")) {
@@ -25,11 +25,13 @@ public class Main {
                 System.out.println("Database not recreated");
             }
 
-            System.out.println("Finding flights");
+            System.out.println("Finding similar records");
             data.findRecordPairs();
+            System.out.println("Size of recordPair set: " + data.getRecordPairSize());
 
-            System.out.println("Size of recordPair set is: " + data.getRecordPairSize());
-            System.out.println("Size of likely flight set is: " + data.getRecordPairSizeOverValue(3));
+            System.out.println("Finding flights");
+            data.findFlights();
+            System.out.println("Number of flights:" + data.getFlightSetSize());
 
         } catch (Exception e) {
             e.printStackTrace();
