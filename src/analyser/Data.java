@@ -102,7 +102,6 @@ public class Data {
      */
     public void readData() throws SQLException {
         Statement statement = connection.createStatement();
-        //statement.execute("SELECT * FROM records");
 
         ResultSet resultSet = statement.executeQuery("SELECT * FROM records;");
         while (resultSet.next()) {
@@ -110,5 +109,27 @@ public class Data {
             System.out.println("Airframe = " + resultSet.getString("content_airframe_type_icao_value"));
 
         }
+    }
+
+    /**
+     * Finds records with similar characteristics and assumes they are the same flight
+     * @throws SQLException
+     */
+    public void findFlights() throws SQLException {
+        Statement statement = connection.createStatement();
+
+        ResultSet distinctPlaneModels = statement.executeQuery("SELECT DISTINCT content_airframe_type_icao_value FROM records");
+        ResultSet distinctDestinations = statement.executeQuery("SELECT DISTINCT arrival_aerodrome_actual_icao_value FROM records UNION " +
+                "                                                     SELECT DISTINCT arrival_aerodrome_scheduled_icao_value FROM records UNION " +
+                "                                                      SELECT DISTINCT departure_aerodrome_actual_icao_value FROM records UNION " +
+                "                                                       SELECT DISTINCT departure_aerodrome_scheduled_icao_value FROM records");
+
+        ResultSet resultSet;
+        while (distinctPlaneModels.next()) {
+            resultSet = statement.executeQuery("SELECT * records WHERE content_airframe_type_icao_value = " + distinctPlaneModels.getString(1));
+        }
+        System.out.println(resultSet.getString("content_airframe_type_icao_value"));
+
+
     }
 }
