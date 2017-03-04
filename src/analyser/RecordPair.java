@@ -47,6 +47,10 @@ public class RecordPair {
         return value;
     }
 
+    /**
+     * Returns the record time stamp of the first record
+     * @return the record time stamp of the first record
+     */
     public String getRecordTimeStamp1() {
         return recordTimeStamp1;
     }

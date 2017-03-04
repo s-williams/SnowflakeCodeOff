@@ -29,6 +29,10 @@ public class Flight {
         this.arrivalTime = arrivalTime;
     }
 
+    /**
+     * Returns a string of the flight details
+     * @return a string of the flight details
+     */
     public String getFlightDetails() {
         return "Model " + plane + ", going from " + departureDestination + " to " + arrivalDestination + ", leaving at " + departureTime + ", and arriving at " + arrivalTime;
     }

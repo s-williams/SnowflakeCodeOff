@@ -207,7 +207,7 @@ public class Data {
                 }
 
                 //Add it to the set of reasonablely close pairs
-                if (recordPair.getValue() > 7) {
+                if (recordPair.getValue() == 8) {
                     recordPairSet.add(recordPair);
                 }
             }
@@ -218,7 +218,7 @@ public class Data {
     }
 
     /**
-     * Finds the appropiate flights from the record pairs
+     * Finds the appropriate flights from the record pairs
      * @throws SQLException
      */
     public void findFlights() throws SQLException {

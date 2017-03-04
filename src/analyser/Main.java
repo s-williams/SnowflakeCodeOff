@@ -10,6 +10,10 @@ import java.util.Scanner;
  */
 public class Main {
 
+    /**
+     * Main
+     * @param args arguments
+     */
     public static void main(String[] args) {
         try {
             Scanner scanner = new Scanner(System.in);
