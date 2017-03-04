@@ -30,6 +30,9 @@ public class Main {
 
             System.out.println("Finding flights");
             data.findFlights();
+
+            System.out.println("\nSize of flight set is: " + data.getFlightSetSize());
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,6 +2,8 @@ package analyser;
 
 import java.io.*;
 import java.sql.*;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Data model
@@ -13,6 +15,8 @@ public class Data {
     private Connection connection;
     private String source;
 
+    private Set<Flight> flightSet;
+    private Set<RecordPair> recordPairSet;
 
     /**
      * Constructor
@@ -118,18 +122,32 @@ public class Data {
     public void findFlights() throws SQLException {
         Statement statement = connection.createStatement();
 
-        ResultSet distinctPlaneModels = statement.executeQuery("SELECT DISTINCT content_airframe_type_icao_value FROM records");
-        ResultSet distinctDestinations = statement.executeQuery("SELECT DISTINCT arrival_aerodrome_actual_icao_value FROM records UNION " +
-                "                                                     SELECT DISTINCT arrival_aerodrome_scheduled_icao_value FROM records UNION " +
-                "                                                      SELECT DISTINCT departure_aerodrome_actual_icao_value FROM records UNION " +
-                "                                                       SELECT DISTINCT departure_aerodrome_scheduled_icao_value FROM records");
+        ResultSet firstLoop = statement.executeQuery("SELECT * FROM records");
+        ResultSet secondLoop = statement.executeQuery("SELECT * FROM records");
 
-        ResultSet resultSet;
-        while (distinctPlaneModels.next()) {
-            resultSet = statement.executeQuery("SELECT * records WHERE content_airframe_type_icao_value = " + distinctPlaneModels.getString(1));
+
+
+        //Compare every flight record with every other flight record
+        //If two flights use the same airframe, reasonably assume that they might be the same flight
+        while (firstLoop.next()) {
+            while (secondLoop.next()) {
+                if (Objects.equals(firstLoop.getString("content_airframe_type_icao_value"), secondLoop.getString("content_airframe_type_icao_value")) ||
+                    Objects.equals(firstLoop.getString("content_airframe_type_icao_value"), "") ||
+                    Objects.equals("", secondLoop.getString("content_airframe_type_icao_value"))){
+                        RecordPair recordPair = new RecordPair(firstLoop.getString("TIMESTAMP"),secondLoop.getString("TIMESTAMP"));
+                        recordPair.addValue(1);
+                }
+            }
         }
-        System.out.println(resultSet.getString("content_airframe_type_icao_value"));
 
+        System.out.println();
+    }
 
+    public int getFlightSetSize() {
+        return flightSet.size();
+    }
+
+    public int getRecordPairSize() {
+        return recordPairSet.size();
     }
 }
